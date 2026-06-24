@@ -1,16 +1,27 @@
-app = "your-pocketbase-app-name"
-primary_region = "ams" # Change to your preferred region
+# fly.toml app configuration file generated for pocketbase-fi-rc-1 on 2026-06-24T11:22:48Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'pocketbase-fi-rc-1'
+primary_region = 'sin'
 
 [build]
-  dockerfile = "Dockerfile"
+  dockerfile = 'Dockerfile'
+
+[[mounts]]
+  source = 'pb_data'
+  destination = '/pb/pb_data'
 
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = false
+  auto_stop_machines = 'off'
   auto_start_machines = true
   min_machines_running = 1
 
-[[mounts]]
-  source = "pb_data"
-  destination = "/pb/pb_data"
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
+  memory_mb = 1024
