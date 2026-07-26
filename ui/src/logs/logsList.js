@@ -360,9 +360,21 @@ export function logsList(logsSettings) {
                                                 type: "checkbox",
                                                 checked: () => !!data.bulkSelected[log.id],
                                                 onchange: (e) => {
-                                                    const bulkSelected = JSON.parse(
-                                                        JSON.stringify(data.bulkSelected),
-                                                    );
+                                                    let bulkSelected = Object.assign({}, data.bulkSelected);
+
+                                                    // range select
+                                                    if (e.target.__shiftKey) {
+                                                        e.target.__shiftKey = false;
+
+                                                        app.utils.bulkSelectRange(
+                                                            data.logs,
+                                                            bulkSelected,
+                                                            log,
+                                                            e.target.checked,
+                                                        );
+                                                    }
+
+                                                    // toggle current log
                                                     if (e.target.checked) {
                                                         bulkSelected[log.id] = log;
                                                     } else {
@@ -373,7 +385,18 @@ export function logsList(logsSettings) {
                                                     data.bulkSelected = bulkSelected;
                                                 },
                                             }),
-                                            t.label({ htmlFor: "cb_" + log.id }),
+                                            t.label({
+                                                htmlFor: "cb_" + log.id,
+                                                // workaround https://github.com/pocketbase/pocketbase/issues/7771
+                                                onclick: (e) => {
+                                                    e.preventDefault();
+                                                    const input = document.getElementById(e.target.htmlFor);
+                                                    if (input) {
+                                                        input.__shiftKey = e.shiftKey;
+                                                        input.click();
+                                                    }
+                                                },
+                                            }),
                                         ),
                                     ),
                                     t.td({ className: "col-field-name-level" }, logLevel(log)),

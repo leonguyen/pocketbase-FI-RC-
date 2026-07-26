@@ -548,7 +548,7 @@ window.app.components.recordsList = function(propsArg = {}) {
                         );
                     }
 
-                    return data.records.map((record, i) => {
+                    return data.records.map((record) => {
                         return t.tr(
                             {
                                 rid: recordRid(record),
@@ -594,7 +594,21 @@ window.app.components.recordsList = function(propsArg = {}) {
                                         id: () => uniqueId + record.id,
                                         checked: () => !!data.bulkSelected[record.id],
                                         onchange: (e) => {
-                                            const bulkSelected = JSON.parse(JSON.stringify(data.bulkSelected));
+                                            let bulkSelected = Object.assign({}, data.bulkSelected);
+
+                                            // range select
+                                            if (e.target.__shiftKey) {
+                                                e.target.__shiftKey = false;
+
+                                                app.utils.bulkSelectRange(
+                                                    data.records,
+                                                    bulkSelected,
+                                                    record,
+                                                    e.target.checked,
+                                                );
+                                            }
+
+                                            // toggle current record
                                             if (e.target.checked) {
                                                 bulkSelected[record.id] = record;
                                             } else {
@@ -605,7 +619,18 @@ window.app.components.recordsList = function(propsArg = {}) {
                                             data.bulkSelected = bulkSelected;
                                         },
                                     }),
-                                    t.label({ htmlFor: uniqueId + record.id }),
+                                    t.label({
+                                        htmlFor: uniqueId + record.id,
+                                        // workaround https://github.com/pocketbase/pocketbase/issues/7771
+                                        onclick: (e) => {
+                                            e.preventDefault();
+                                            const input = document.getElementById(e.target.htmlFor);
+                                            if (input) {
+                                                input.__shiftKey = e.shiftKey;
+                                                input.click();
+                                            }
+                                        },
+                                    }),
                                 ),
                             ),
                             () => {
