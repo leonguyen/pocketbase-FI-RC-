@@ -1,5 +1,5 @@
 # --- Build stage ---
-FROM golang:1.22-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 RUN apk add --no-cache git
 
@@ -7,7 +7,7 @@ WORKDIR /app
 RUN git clone --depth 1 https://github.com/pocketbase/pocketbase.git .
 
 WORKDIR /app/examples/base
-RUN go build -o /pocketbase
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /pocketbase
 
 # --- Runtime stage ---
 FROM alpine:latest
