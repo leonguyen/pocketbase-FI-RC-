@@ -1,16 +1,23 @@
+# --- Build stage ---
+FROM golang:1.22-alpine AS builder
+
+RUN apk add --no-cache git
+
+WORKDIR /app
+RUN git clone --depth 1 https://github.com/pocketbase/pocketbase.git .
+
+WORKDIR /app/examples/base
+RUN go build -o /pocketbase
+
+# --- Runtime stage ---
 FROM alpine:latest
 
-ARG PB_VERSION=0.22.22
+RUN apk add --no-cache ca-certificates
 
-RUN apk add --no-cache \
-    unzip \
-    ca-certificates
+WORKDIR /pb
+COPY --from=builder /pocketbase /pb/pocketbase
 
-# Download and unzip PocketBase
-ADD https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_amd64.zip /tmp/pb.zip
-RUN unzip /tmp/pb.zip -d /pb/
+EXPOSE 8090
 
-EXPOSE 8080
-
-# Start PocketBase and point data to /pb/pb_data (which we will mount to persistent volumes)
-CMD ["/pb/pocketbase", "serve", "--http=0.0.0.0:8080", "--dir=/pb/pb_data"]
+# Render injects $PORT - bind to it instead of a fixed port
+CMD ["sh", "-c", "/pb/pocketbase serve --http=0.0.0.0:${PORT:-8090}"]

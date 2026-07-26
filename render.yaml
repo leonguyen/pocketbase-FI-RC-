@@ -1,14 +1,16 @@
 services:
   - type: web
-    name: pocketbase-app
-    env: docker
-    repo: https://github.com/YOUR_USERNAME/YOUR_REPO # Or omit if deploying from the linked Git repo
-    plan: starter # Persistent disks require at least the Starter plan
-    region: oregon # Choose your closest region
-    envVars:
-      - key: PORT
-        value: 8080
+    name: pocketbase
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    region: oregon
+    healthCheckPath: /api/health
+    autoDeploy: true
     disk:
-      name: pb-data-disk
+      name: pb-data
       mountPath: /pb/pb_data
       sizeGB: 1
+    envVars:
+      - key: PORT
+        value: 8090
